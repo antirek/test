@@ -1,0 +1,64 @@
+<html>
+  <head>
+      <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <input v-model="last_name" placeholder="last_name"></input>
+      <input v-model="first_name" placeholder="first_name"></input>
+      <input v-model="year_birth" placeholder="year_birth"></input>
+      <input v-model="country_iso" placeholder="country_iso"></input>
+      <button v-on:click="search()">Search</button>
+
+      <br/><br/>
+      <textarea v-model="result" rows="5" cols="50"></textarea>
+
+    </div>
+  
+    <script>
+      let RV;
+
+      const app = new Vue({
+        el: '#app',
+        data: {
+          last_name: 'RADOSTEV',
+          first_name: 'ALEXANDER',
+          year_birth: '1983',
+          country_iso: 'RUS',
+          result: null,
+        },
+        methods: {
+          search: async function() {
+            /*const formdata = new FormData();
+            formdata.append('last_name', this.last_name);
+            formdata.append('first_name', this.first_name);
+            formdata.append('year_birth', this.year_birth);
+            formdata.append('country_iso', this.country_iso);
+            */
+            console.log('clecl')
+            const url = 'https://cors-anywhere.herokuapp.com/https://icas.world/ru/rating/api/get_rating.php';
+            const resp = await fetch(url, {
+              method: 'post',
+              //mode: 'no-cors',
+              //body: formdata,
+              headers: {
+                'Accept': 'application/json',
+                'Content-type': 'application/json',                
+              },
+              body: JSON.stringify({
+                last_name: this.last_name,
+                first_name: this.first_name,
+                year_birth: this.year_birth,
+                country_iso: this.country_iso,
+              })
+            });
+                               
+            const result = await resp.json();
+            console.log(result);
+            this.result = JSON.stringify(result);
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
