@@ -33,10 +33,10 @@
             <td> {{man.first_name_en}} </td>
             <td> {{man.name_native}} </td>
             <td> {{man.sex}} </td>
-            <td> {{man.data.best_result.club}} </td>
-            <td> {{man.data.best_result.pool}} </td>
-            <td v-if="man.data.results[0]"> {{man.data.results[0].club}} </td>
-            <td v-if="man.data.results[0]"> {{man.data.results[0].result_time}} </td>
+            <td v-if="man.data && man.data.best_result"> {{man.data.best_result.club}} </td>
+            <td v-if="man.data && man.data.best_result"> {{man.data.best_result.pool}} </td>
+            <td v-if="man.data && man.data.results[0]"> {{man.data.results[0].club}} </td>
+            <td v-if="man.data && man.data.results[0]"> {{man.data.results[0].result_time}} </td>
           </tr>
         </table>
       </div>
@@ -59,30 +59,31 @@
           search: async function() {
             this.response_status = null;
             const url = 'https://cors-anywhere.herokuapp.com/https://icas.world/ru/rating/api/get_rating.php';
-            const resp = await fetch(url, {
+            fetch(url, {
               method: 'post',
               headers: {
                 'Accept': 'application/json',
-                'Content-type': 'application/json',                
+                'Content-type': 'application/json',
               },
               body: JSON.stringify({
-                last_name: this.last_name,
-                first_name: this.first_name,
-                year_birth: this.year_birth,
-                country_iso: this.country_iso,
+                last_name: this.last_name || null,
+                first_name: this.first_name || null,
+                year_birth: this.year_birth || null,
+                country_iso: this.country_iso || null,
               })
+            }).then(resp => {
+              return resp.json();
+            }).then(response => {
+              console.log(response);
+              this.response = JSON.stringify(response, null, 2);
+              
+              if (response === "EMPTY_REQUEST" || response === "NOT_FOUND") {
+                this.response_status = response;
+              } else {
+                this.response_status = 'FOUND';
+                this.mans = response;
+              }
             });
-                               
-            const response = await resp.json();
-            console.log(response);
-            this.response = JSON.stringify(response, null, 2);
-            
-            if (response === "EMPTY_REQUEST" || response === "NOT_FOUND") {
-              this.response_status = response;
-            } else {
-              this.response_status = 'FOUND';
-              this.mans = response;
-            }
           }
         }
       })
