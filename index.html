@@ -11,12 +11,37 @@
       <button v-on:click="search()">Search</button>
 
       <br/><br/>
-      <textarea v-model="result" rows="5" cols="50"></textarea>
+      <textarea v-model="response" rows="5" cols="50"></textarea>
 
+      <div v-if="response_status">Статус поиска: {{response_status}}</div>
+      
+      <div v-if="response_status === 'FOUND'">
+        <table>
+          <tr>
+            <td>last_name_en</td>
+            <td>first_name_en</td>
+            <td>name_native</td>
+            <td>sex</td>
+            <td>best_result.club</td>
+            <td>best_result.pool</td>
+            <td>results[0].club</td>
+            <td>results[0].result_time</td>
+          </tr>
+          <tr v-for="man in mans" :key="man.last_name_en">
+            <td> {{man.last_name_en}} </td>
+            <td> {{man.first_name_en}} </td>
+            <td> {{man.name_native}} </td>
+            <td> {{man.sex}} </td>
+            <td> {{man.data.best_result.club}} </td>
+            <td> {{man.data.best_result.pool}} </td>
+            <td v-if="man.data.results[0]"> {{man.data.results[0].club}} </td>
+            <td v-if="man.data.results[0]"> {{man.data.results[0].result_time}} </td>
+          </tr>
+        </table>
+      </div>
     </div>
   
     <script>
-      let RV;
 
       const app = new Vue({
         el: '#app',
@@ -25,22 +50,16 @@
           first_name: 'ALEXANDER',
           year_birth: '1983',
           country_iso: 'RUS',
-          result: null,
+          response: null,
+          response_status: null,
+          mans: null,
         },
         methods: {
           search: async function() {
-            /*const formdata = new FormData();
-            formdata.append('last_name', this.last_name);
-            formdata.append('first_name', this.first_name);
-            formdata.append('year_birth', this.year_birth);
-            formdata.append('country_iso', this.country_iso);
-            */
-            console.log('clecl')
+            this.response_status = null;
             const url = 'https://cors-anywhere.herokuapp.com/https://icas.world/ru/rating/api/get_rating.php';
             const resp = await fetch(url, {
               method: 'post',
-              //mode: 'no-cors',
-              //body: formdata,
               headers: {
                 'Accept': 'application/json',
                 'Content-type': 'application/json',                
@@ -53,9 +72,16 @@
               })
             });
                                
-            const result = await resp.json();
-            console.log(result);
-            this.result = JSON.stringify(result);
+            const response = await resp.json();
+            console.log(response);
+            this.response = JSON.stringify(response, null, 2);
+            
+            if (response === "EMPTY_REQUEST" || response === "NOT_FOUND") {
+              this.response_status = response;
+            } else {
+              this.response_status = 'FOUND';
+              this.mans = response;
+            }
           }
         }
       })
