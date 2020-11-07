@@ -29,16 +29,17 @@
             <td>results[0].result_time</td>
             <td>link</td>
           </tr>
-          <tr v-for="(man, i) in mans" :key="i">  <!-- поменялся key -->>
+          <tr v-for="(man, i) in mans" :key="i">  <!-- поменялся key -->
             <td> {{man.last_name_en}} </td>
             <td> {{man.first_name_en}} </td>
             <td> {{man.name_native}} </td>
             <td> {{man.sex}} </td>
-            <td v-if="man.data && man.data.best_result"> {{man.data.best_result.club}} </td>
-            <td v-if="man.data && man.data.best_result"> {{man.data.best_result.pool}} </td>
-            <td v-if="man.data && man.data.results[0]"> {{man.data.results[0].club}} </td>
-            <td v-if="man.data && man.data.results[0]"> {{man.data.results[0].result_time}} </td>
-            <td>   <!-- формирование ссылки -->>
+              <!-- обернул необязательные в span, чтоб таблица не плыла-->
+            <td><span v-if="man.data && man.data.best_result"> {{man.data.best_result.club}} </span></td>
+            <td><span v-if="man.data && man.data.best_result"> {{man.data.best_result.pool}} </span></td>
+            <td><span v-if="man.data && man.data.results[0]"> {{man.data.results[0].club}} </span></td>
+            <td><span v-if="man.data && man.data.results[0]"> {{man.data.results[0].result_time}} </span></td>
+            <td>   <!-- формирование ссылки -->
               <a href="#" v-on:click="searchOnePerson(man)"> {{ man.name_native }}</a>
             </td>
           </tr>
