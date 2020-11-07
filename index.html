@@ -27,8 +27,9 @@
             <td>best_result.pool</td>
             <td>results[0].club</td>
             <td>results[0].result_time</td>
+            <td>link</td>
           </tr>
-          <tr v-for="man in mans" :key="man.last_name_en">
+          <tr v-for="(man, i) in mans" :key="i">  <!-- поменялся key -->>
             <td> {{man.last_name_en}} </td>
             <td> {{man.first_name_en}} </td>
             <td> {{man.name_native}} </td>
@@ -37,9 +38,40 @@
             <td v-if="man.data && man.data.best_result"> {{man.data.best_result.pool}} </td>
             <td v-if="man.data && man.data.results[0]"> {{man.data.results[0].club}} </td>
             <td v-if="man.data && man.data.results[0]"> {{man.data.results[0].result_time}} </td>
+            <td>   <!-- формирование ссылки -->>
+              <a href="#" v-on:click="searchOnePerson(man)"> {{ man.name_native }}</a>
+            </td>
           </tr>
         </table>
       </div>
+
+      <div v-if="response_one_person_status">Статус поиска одного: {{ response_one_person_status }}</div>
+
+      <div v-if="person">
+        <table>
+          <tr>
+            <td>last_name_en</td>
+            <td>first_name_en</td>
+            <td>name_native</td>
+            <td>sex</td>
+            <td>best_result.club</td>
+            <td>best_result.pool</td>
+            <td>results[0].club</td>
+            <td>results[0].result_time</td>
+          </tr>
+          <tr>
+            <td> {{person.last_name_en}} </td>
+            <td> {{person.first_name_en}} </td>
+            <td> {{person.name_native}} </td>
+            <td> {{person.sex}} </td>
+            <td v-if="person.data && person.data.best_result"> {{person.data.best_result.club}} </td>
+            <td v-if="person.data && person.data.best_result"> {{person.data.best_result.pool}} </td>
+            <td v-if="person.data && person.data.results[0]"> {{person.data.results[0].club}} </td>
+            <td v-if="person.data && person.data.results[0]"> {{person.data.results[0].result_time}} </td>
+          </tr>
+        </table>
+      </div>
+
     </div>
   
     <script>
@@ -47,15 +79,48 @@
       const app = new Vue({
         el: '#app',
         data: {
-          last_name: 'RADOSTEV',
-          first_name: 'ALEXANDER',
-          year_birth: '1983',
-          country_iso: 'RUS',
+          last_name: 'FOMIN',
+          first_name: null,
+          year_birth: null,
+          country_iso: null,
           response: null,
           response_status: null,
           mans: null,
+          person: null,
+          response_one_person_status: null,
+          response_one_person: null,
         },
         methods: {
+          searchOnePerson: async function(man) {
+            // console.log('man', man);
+            this.response_one_person_status = null;
+            this.person = null;
+            const url = 'https://cors-anywhere.herokuapp.com/https://icas.world/ru/rating/api/get_rating.php';
+            fetch(url, {
+              method: 'post',
+              headers: {
+                'Accept': 'application/json',
+                'Content-type': 'application/json',
+              },
+              body: JSON.stringify({
+                last_name: man.last_name_en || null,   // берем конкретно en 
+                first_name: man.first_name_en || null,
+                year_birth: man.year_birth || null,
+                country_iso: man.country_iso || null,
+              })
+            }).then(resp => {
+              return resp.json();
+            }).then(response => {
+              console.log(response);
+              this.response = JSON.stringify(response, null, 2);
+              if (response === "EMPTY_REQUEST" || response === "NOT_FOUND") {
+                this.response_one_person_status = response;
+              } else {
+                this.response_one_person_status = 'FOUND';
+                this.person = response[0];   //так как вернется один в массиве
+              }
+            });
+          },
           search: async function() {
             this.response_status = null;
             const url = 'https://cors-anywhere.herokuapp.com/https://icas.world/ru/rating/api/get_rating.php';
